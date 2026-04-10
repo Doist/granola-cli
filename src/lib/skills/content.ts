@@ -23,6 +23,7 @@ The CLI uses the official Granola public API plus a local synced cache.
 - Granola does not expose server-side full-text search or a documented folders endpoint, so search and folder filtering run against the local cache.
 - Folder filtering is derived from each note's \`folder_membership\` metadata.
 - \`--person\` and \`--folder\` use case-insensitive substring matching.
+- Date-only filters like \`--after 2026-04-01\` use local day boundaries.
 
 ## Output Formats
 
@@ -37,7 +38,6 @@ Prefer structured output for agent use:
 ### Authentication
 \`\`\`bash
 granola auth login
-granola auth login --token <api-key>
 granola auth status
 granola auth logout
 \`\`\`

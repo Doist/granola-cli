@@ -1,3 +1,4 @@
+import type { Dispatcher } from 'undici'
 import { getDefaultDispatcher } from './http-dispatcher.js'
 
 interface RetryConfig {
@@ -8,6 +9,7 @@ interface RetryConfig {
 
 interface FetchOptions extends RequestInit {
     timeout?: number
+    dispatcher?: Dispatcher
 }
 
 interface FetchWithRetryArgs {
@@ -95,12 +97,11 @@ export async function fetchWithRetry(args: FetchWithRetryArgs): Promise<Response
                 clearTimeoutFn = timeoutResult.clear
             }
 
-            const fetchOptions: RequestInit = {
+            const fetchOptions: FetchOptions = {
                 ...requestOptions,
                 signal: requestSignal,
+                dispatcher: getDefaultDispatcher(),
             }
-            // @ts-expect-error dispatcher is supported by Node.js fetch via Undici
-            fetchOptions.dispatcher = getDefaultDispatcher()
 
             const response = await fetch(url, fetchOptions)
             if (clearTimeoutFn) {

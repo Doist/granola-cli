@@ -12,17 +12,18 @@ import type {
 } from './types.js'
 
 export function normalizeDateBoundary(value: string, edge: 'start' | 'end'): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const [year, month, day] = value.split('-').map(Number)
+        const date =
+            edge === 'start'
+                ? new Date(year, month - 1, day, 0, 0, 0, 0)
+                : new Date(year, month - 1, day, 23, 59, 59, 999)
+        return date.toISOString()
+    }
+
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) {
         throw new GranolaError('USAGE_ERROR', `Invalid date: ${value}`)
-    }
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-        if (edge === 'start') {
-            date.setUTCHours(0, 0, 0, 0)
-        } else {
-            date.setUTCHours(23, 59, 59, 999)
-        }
     }
 
     return date.toISOString()

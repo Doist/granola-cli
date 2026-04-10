@@ -1,15 +1,20 @@
 import { skillInstallers } from './index.js'
 
+export interface InstalledSkillError {
+    name: string
+    message: string
+}
+
 export interface UpdateAllResult {
     updated: string[]
     skipped: string[]
-    errors: string[]
+    errors: InstalledSkillError[]
 }
 
 export async function updateAllInstalledSkills(local: boolean): Promise<UpdateAllResult> {
     const updated: string[] = []
     const skipped: string[] = []
-    const errors: string[] = []
+    const errors: InstalledSkillError[] = []
 
     for (const [name, installer] of Object.entries(skillInstallers)) {
         try {
@@ -20,8 +25,11 @@ export async function updateAllInstalledSkills(local: boolean): Promise<UpdateAl
             } else {
                 skipped.push(name)
             }
-        } catch {
-            errors.push(name)
+        } catch (error) {
+            errors.push({
+                name,
+                message: error instanceof Error ? error.message : String(error),
+            })
         }
     }
 

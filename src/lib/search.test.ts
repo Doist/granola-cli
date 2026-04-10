@@ -40,6 +40,15 @@ const NOTES: IndexedNote[] = [
 ]
 
 describe('search helpers', () => {
+    it('normalizes date-only filters to local day boundaries', () => {
+        expect(normalizeDateBoundary('2026-04-01', 'start')).toBe(
+            new Date(2026, 3, 1, 0, 0, 0, 0).toISOString(),
+        )
+        expect(normalizeDateBoundary('2026-04-01', 'end')).toBe(
+            new Date(2026, 3, 1, 23, 59, 59, 999).toISOString(),
+        )
+    })
+
     it('filters entries by person, folder, and date', () => {
         const filtered = filterEntries(NOTES, {
             person: 'alice',

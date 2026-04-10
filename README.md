@@ -72,12 +72,6 @@ Create a personal API key in the Granola desktop app:
 3. Run `granola auth login`
 4. Paste the key when prompted
 
-You can also pass the key directly:
-
-```bash
-granola auth login --token <api-key>
-```
-
 ### Resolution order
 
 API key resolution order:
@@ -104,6 +98,7 @@ The CLI maintains a local cache under:
 
 `list`, `folders`, `search`, and `show` will run an incremental sync first unless you pass `--no-sync`.
 A full sync is also triggered automatically on first use and periodically after that.
+Date-only filters such as `--after 2026-04-01` use your local timezone's day boundaries.
 
 You can sync explicitly:
 

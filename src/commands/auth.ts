@@ -36,16 +36,23 @@ type LoginPayload = AuthStatus & {
     envWarning: string | null
 }
 
-export function registerAuthCommand(program: Command): void {
+interface AuthCommandDependencies {
+    readApiKey?: () => Promise<string>
+}
+
+export function registerAuthCommand(
+    program: Command,
+    dependencies: AuthCommandDependencies = {},
+): void {
+    const readApiKey = dependencies.readApiKey ?? promptForApiKey
     const auth = program.command('auth').description('Manage authentication')
 
     auth.command('login')
         .description('Authenticate with the Granola API')
-        .option('--token <token>', 'Authenticate using a Granola API key')
         .option('--json', 'Output JSON')
-        .action(async (options: { token?: string; json?: boolean }) => {
+        .action(async (options: { json?: boolean }) => {
             const envToken = process.env.GRANOLA_API_KEY?.trim() || null
-            const token = options.token?.trim() || (await promptForApiKey())
+            const token = await readApiKey()
             if (!token) {
                 console.error(formatError('AUTH_ERROR', 'Granola API key cannot be empty'))
                 process.exit(1)
@@ -262,7 +269,7 @@ export async function readMaskedLine(
                 if (!token) {
                     return
                 }
-                token = token.slice(0, -1)
+                token = [...token].slice(0, -1).join('')
                 output.write('\b \b')
                 return
             }

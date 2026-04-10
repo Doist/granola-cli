@@ -143,15 +143,49 @@ describe('auth command', () => {
         expect(errors).toEqual([])
     })
 
+    it('removes the last full unicode character when masking input', async () => {
+        const { readMaskedLine } = await import('./auth.js')
+        const input = new EventEmitter() as EventEmitter & {
+            isTTY: boolean
+            resume: () => void
+            pause: () => void
+            setRawMode: (mode: boolean) => void
+        }
+        const writes: string[] = []
+
+        input.isTTY = true
+        input.resume = vi.fn()
+        input.pause = vi.fn()
+        input.setRawMode = vi.fn()
+
+        const promise = readMaskedLine(input, {
+            isTTY: true,
+            write(chunk: string) {
+                writes.push(chunk)
+                return true
+            },
+        })
+
+        input.emit('keypress', '🙂', { name: '🙂', sequence: '🙂' })
+        input.emit('keypress', 'a', { name: 'a', sequence: 'a' })
+        input.emit('keypress', '', { name: 'backspace', sequence: '' })
+        input.emit('keypress', '\r', { name: 'enter', sequence: '\r' })
+
+        await expect(promise).resolves.toBe('🙂')
+        expect(writes.join('')).toContain('**')
+    })
+
     it('validates the login token once and warns about env overrides', async () => {
         process.env.GRANOLA_API_KEY = 'env-token'
 
         const { registerAuthCommand } = await import('./auth.js')
         const program = new Command()
         program.exitOverride()
-        registerAuthCommand(program)
+        registerAuthCommand(program, {
+            readApiKey: vi.fn().mockResolvedValue('cli-token'),
+        })
 
-        await program.parseAsync(['node', 'granola', 'auth', 'login', '--token', 'cli-token'])
+        await program.parseAsync(['node', 'granola', 'auth', 'login'])
 
         expect(granolaApiClientMock).toHaveBeenCalledTimes(1)
         expect(granolaApiClientMock).toHaveBeenCalledWith('cli-token')
