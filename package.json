@@ -1,6 +1,6 @@
 {
     "name": "@doist/granola-cli",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "CLI for the Granola notes and transcript API",
     "type": "module",
     "bin": {
